@@ -2,11 +2,11 @@ package org.qii.weiciyuan.othercomponent.unreadnotification;
 
 import org.qii.weiciyuan.R;
 import org.qii.weiciyuan.bean.AccountBean;
+import org.qii.weiciyuan.bean.CommentBean;
 import org.qii.weiciyuan.bean.CommentListBean;
 import org.qii.weiciyuan.bean.UnreadBean;
 import org.qii.weiciyuan.bean.android.UnreadTabIndex;
-import org.qii.weiciyuan.dao.unread.ClearUnreadDao;
-import org.qii.weiciyuan.support.error.WeiboException;
+import org.qii.weiciyuan.support.database.NotificationDBTask;
 import org.qii.weiciyuan.support.lib.RecordOperationAppBroadcastReceiver;
 import org.qii.weiciyuan.support.utils.BundleArgsConstants;
 import org.qii.weiciyuan.support.utils.GlobalContext;
@@ -20,10 +20,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  * User: qii
  * Date: 13-5-4
  */
+@Deprecated
 public class JBMentionsCommentNotificationServiceHelper extends NotificationServiceHelper {
 
 
@@ -40,8 +44,9 @@ public class JBMentionsCommentNotificationServiceHelper extends NotificationServ
     private String ticker;
 
 
-    private static RecordOperationAppBroadcastReceiver clearNotificationEventReceiver;
-
+    private static HashMap<String, RecordOperationAppBroadcastReceiver>
+            clearNotificationEventReceiver
+            = new HashMap<String, RecordOperationAppBroadcastReceiver>();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -67,7 +72,7 @@ public class JBMentionsCommentNotificationServiceHelper extends NotificationServ
 //        int count = (data.getSize() >= Integer.valueOf(SettingUtility.getMsgCount()) ? unreadBean
 //                .getMention_cmt() : data.getSize());
 
-        int count = unreadBean.getMention_cmt();
+        int count = Math.min(unreadBean.getMention_cmt(), data.getSize());
 
         if (count == 0) {
             return;
@@ -89,29 +94,42 @@ public class JBMentionsCommentNotificationServiceHelper extends NotificationServ
             builder.setNumber(count);
         }
 
-        if (clearNotificationEventReceiver != null) {
+        if (clearNotificationEventReceiver.get(accountBean.getUid()) != null) {
             Utility.unregisterReceiverIgnoredReceiverNotRegisteredException(
-                    GlobalContext.getInstance(), clearNotificationEventReceiver);
-            JBMentionsCommentNotificationServiceHelper.clearNotificationEventReceiver = null;
+                    GlobalContext.getInstance(),
+                    clearNotificationEventReceiver.get(accountBean.getUid()));
+            JBMentionsCommentNotificationServiceHelper.clearNotificationEventReceiver
+                    .put(accountBean.getUid(), null);
         }
 
-        clearNotificationEventReceiver = new RecordOperationAppBroadcastReceiver() {
+        RecordOperationAppBroadcastReceiver receiver = new RecordOperationAppBroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            new ClearUnreadDao(accountBean.getAccess_token())
-                                    .clearMentionCommentUnread(unreadBean, accountBean.getUid());
+//                            new ClearUnreadDao(accountBean.getAccess_token())
+//                                    .clearMentionCommentUnread(unreadBean, accountBean.getUid());
 
-                        } catch (WeiboException ignored) {
+//                        } catch (WeiboException ignored) {
+
+                            ArrayList<String> ids = new ArrayList<String>();
+
+                            for (CommentBean msg : data.getItemList()) {
+                                ids.add(msg.getId());
+                            }
+
+                            NotificationDBTask.addUnreadNotification(accountBean.getUid(), ids,
+                                    NotificationDBTask.UnreadDBType.mentionsComment);
 
                         } finally {
                             Utility.unregisterReceiverIgnoredReceiverNotRegisteredException(
-                                    GlobalContext.getInstance(), clearNotificationEventReceiver);
-                            JBMentionsCommentNotificationServiceHelper.clearNotificationEventReceiver
-                                    = null;
+                                    GlobalContext.getInstance(),
+                                    clearNotificationEventReceiver.get(accountBean.getUid()));
+                            JBMentionsCommentNotificationServiceHelper
+                                    .clearNotificationEventReceiver
+                                    .put(accountBean.getUid(), null);
                         }
 
                     }
@@ -119,9 +137,11 @@ public class JBMentionsCommentNotificationServiceHelper extends NotificationServ
             }
         };
 
+        clearNotificationEventReceiver.put(accountBean.getUid(), receiver);
+
         IntentFilter intentFilter = new IntentFilter(RESET_UNREAD_MENTIONS_COMMENT_ACTION);
 
-        GlobalContext.getInstance().registerReceiver(clearNotificationEventReceiver, intentFilter);
+        GlobalContext.getInstance().registerReceiver(receiver, intentFilter);
 
         Intent broadcastIntent = new Intent(RESET_UNREAD_MENTIONS_COMMENT_ACTION);
 
@@ -130,9 +150,10 @@ public class JBMentionsCommentNotificationServiceHelper extends NotificationServ
                         PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setDeleteIntent(deletedPendingIntent);
 
-        Intent intent = new Intent(getApplicationContext(), WriteReplyToCommentActivity.class);
-        intent.putExtra("token", accountBean.getAccess_token());
-        intent.putExtra("msg", data.getItem(0));
+        Intent intent = WriteReplyToCommentActivity
+                .newIntentFromNotification(getApplicationContext(), accountBean,
+                        data.getItem(
+                                currentIndex));
         PendingIntent pendingIntent = PendingIntent
                 .getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.addAction(R.drawable.reply_to_comment_light,

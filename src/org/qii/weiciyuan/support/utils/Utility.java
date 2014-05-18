@@ -52,6 +52,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.DisplayMetrics;
@@ -822,10 +824,8 @@ public class Utility {
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            Intent intent = new Intent(activity,
-                                                    AccountActivity.class);
-                                            intent.putExtra("launcher", false);
-                                            activity.startActivity(intent);
+                                            activity.startActivity(
+                                                    AccountActivity.newIntent());
                                             activity.finish();
                                             GlobalContext.getInstance().tokenExpiredDialogIsShowing
                                                     = false;
@@ -966,7 +966,7 @@ public class Utility {
             }
             strResult = strResult.toUpperCase();
             //debug
-            if ("606A98FAF73EF658B775CA4EFE4B8427".toUpperCase().equals(strResult)) {
+            if ("DE421D82D4BBF9042886E72AA31FE22".toUpperCase().equals(strResult)) {
                 return true;
             }
             //relaease
@@ -1026,6 +1026,20 @@ public class Utility {
                 .scanFile(GlobalContext.getInstance(), new String[]{path}, new String[]{type},
                         null);
 
+    }
+
+    public static boolean isDebugMode() {
+        return BuildConfig.DEBUG;
+    }
+
+    //long click link(schedule show dialog event), press home button(onPause onSaveInstance), show dialog,then crash....
+    public static void forceShowDialog(FragmentActivity activity, DialogFragment dialogFragment) {
+//        try {
+        dialogFragment.show(activity.getSupportFragmentManager(), "");
+        activity.getSupportFragmentManager().executePendingTransactions();
+//        } catch (Exception ignored) {
+//
+//        }
     }
 }
 

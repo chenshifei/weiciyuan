@@ -6,8 +6,7 @@ import org.qii.weiciyuan.bean.CommentBean;
 import org.qii.weiciyuan.bean.CommentListBean;
 import org.qii.weiciyuan.bean.UnreadBean;
 import org.qii.weiciyuan.bean.android.UnreadTabIndex;
-import org.qii.weiciyuan.dao.unread.ClearUnreadDao;
-import org.qii.weiciyuan.support.error.WeiboException;
+import org.qii.weiciyuan.support.database.NotificationDBTask;
 import org.qii.weiciyuan.support.lib.RecordOperationAppBroadcastReceiver;
 import org.qii.weiciyuan.support.utils.BundleArgsConstants;
 import org.qii.weiciyuan.support.utils.GlobalContext;
@@ -21,10 +20,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  * User: qii
  * Date: 13-5-4
  */
+@Deprecated
 public class JBCommentsToMeNotificationServiceHelper extends NotificationServiceHelper {
 
 
@@ -41,8 +44,9 @@ public class JBCommentsToMeNotificationServiceHelper extends NotificationService
     private String ticker;
 
 
-    private static RecordOperationAppBroadcastReceiver clearNotificationEventReceiver;
-
+    private static HashMap<String, RecordOperationAppBroadcastReceiver>
+            clearNotificationEventReceiver
+            = new HashMap<String, RecordOperationAppBroadcastReceiver>();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -67,7 +71,7 @@ public class JBCommentsToMeNotificationServiceHelper extends NotificationService
 
 //        int count = (data.getSize() >= Integer.valueOf(SettingUtility.getMsgCount()) ? unreadBean
 //                .getCmt() : data.getSize());
-        int count = unreadBean.getCmt();
+        int count = Math.min(unreadBean.getCmt(), data.getSize());
 
         if (count == 0) {
             return;
@@ -89,28 +93,40 @@ public class JBCommentsToMeNotificationServiceHelper extends NotificationService
             builder.setNumber(count);
         }
 
-        if (clearNotificationEventReceiver != null) {
+        if (clearNotificationEventReceiver.get(accountBean.getUid()) != null) {
             Utility.unregisterReceiverIgnoredReceiverNotRegisteredException(
-                    GlobalContext.getInstance(), clearNotificationEventReceiver);
-            JBCommentsToMeNotificationServiceHelper.clearNotificationEventReceiver = null;
+                    GlobalContext.getInstance(),
+                    clearNotificationEventReceiver.get(accountBean.getUid()));
+            JBCommentsToMeNotificationServiceHelper.clearNotificationEventReceiver
+                    .put(accountBean.getUid(), null);
         }
 
-        clearNotificationEventReceiver = new RecordOperationAppBroadcastReceiver() {
+        RecordOperationAppBroadcastReceiver receiver = new RecordOperationAppBroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            new ClearUnreadDao(accountBean.getAccess_token())
-                                    .clearCommentUnread(unreadBean, accountBean.getUid());
-                        } catch (WeiboException ignored) {
+//                            new ClearUnreadDao(accountBean.getAccess_token())
+//                                    .clearCommentUnread(unreadBean, accountBean.getUid());
+//                        } catch (WeiboException ignored) {
+
+                            ArrayList<String> ids = new ArrayList<String>();
+
+                            for (CommentBean msg : data.getItemList()) {
+                                ids.add(msg.getId());
+                            }
+
+                            NotificationDBTask.addUnreadNotification(accountBean.getUid(), ids,
+                                    NotificationDBTask.UnreadDBType.commentsToMe);
 
                         } finally {
                             Utility.unregisterReceiverIgnoredReceiverNotRegisteredException(
-                                    GlobalContext.getInstance(), clearNotificationEventReceiver);
+                                    GlobalContext.getInstance(),
+                                    clearNotificationEventReceiver.get(accountBean.getUid()));
                             JBCommentsToMeNotificationServiceHelper.clearNotificationEventReceiver
-                                    = null;
+                                    .put(accountBean.getUid(), null);
                         }
 
                     }
@@ -118,9 +134,11 @@ public class JBCommentsToMeNotificationServiceHelper extends NotificationService
             }
         };
 
+        clearNotificationEventReceiver.put(accountBean.getUid(), receiver);
+
         IntentFilter intentFilter = new IntentFilter(RESET_UNREAD_COMMENTS_TO_ME_ACTION);
 
-        GlobalContext.getInstance().registerReceiver(clearNotificationEventReceiver, intentFilter);
+        GlobalContext.getInstance().registerReceiver(receiver, intentFilter);
 
         Intent broadcastIntent = new Intent(RESET_UNREAD_COMMENTS_TO_ME_ACTION);
 
@@ -129,9 +147,9 @@ public class JBCommentsToMeNotificationServiceHelper extends NotificationService
                         PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setDeleteIntent(deletedPendingIntent);
 
-        Intent intent = new Intent(getApplicationContext(), WriteReplyToCommentActivity.class);
-        intent.putExtra("token", accountBean.getAccess_token());
-        intent.putExtra("msg", data.getItem(currentIndex));
+        Intent intent = WriteReplyToCommentActivity
+                .newIntentFromNotification(getApplicationContext(), accountBean, data.getItem(
+                        currentIndex));
         PendingIntent pendingIntent = PendingIntent
                 .getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.addAction(R.drawable.reply_to_comment_light,

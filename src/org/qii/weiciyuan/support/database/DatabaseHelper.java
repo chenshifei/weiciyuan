@@ -1,21 +1,40 @@
 package org.qii.weiciyuan.support.database;
 
+import org.qii.weiciyuan.support.database.dbUpgrade.Upgrade35to36;
+import org.qii.weiciyuan.support.database.table.AccountTable;
+import org.qii.weiciyuan.support.database.table.AtUsersTable;
+import org.qii.weiciyuan.support.database.table.CommentByMeTable;
+import org.qii.weiciyuan.support.database.table.CommentsTable;
+import org.qii.weiciyuan.support.database.table.DMTable;
+import org.qii.weiciyuan.support.database.table.DraftTable;
+import org.qii.weiciyuan.support.database.table.EmotionsTable;
+import org.qii.weiciyuan.support.database.table.FavouriteTable;
+import org.qii.weiciyuan.support.database.table.FilterTable;
+import org.qii.weiciyuan.support.database.table.GroupTable;
+import org.qii.weiciyuan.support.database.table.HomeOtherGroupTable;
+import org.qii.weiciyuan.support.database.table.HomeTable;
+import org.qii.weiciyuan.support.database.table.MentionCommentsTable;
+import org.qii.weiciyuan.support.database.table.MyStatusTable;
+import org.qii.weiciyuan.support.database.table.NotificationTable;
+import org.qii.weiciyuan.support.database.table.RepostsTable;
+import org.qii.weiciyuan.support.database.table.TopicTable;
+import org.qii.weiciyuan.support.utils.GlobalContext;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import org.qii.weiciyuan.support.database.table.*;
-import org.qii.weiciyuan.support.utils.GlobalContext;
 
 /**
  * User: qii
  * Date: 12-7-30
  */
-class DatabaseHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static DatabaseHelper singleton = null;
 
     private static final String DATABASE_NAME = "weibo.db";
-    private static final int DATABASE_VERSION = 34;
+
+    private static final int DATABASE_VERSION = 36;
 
     static final String CREATE_ACCOUNT_TABLE_SQL = "create table " + AccountTable.TABLE_NAME
             + "("
@@ -43,7 +62,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + HomeTable.RECENT_GROUP_ID + " text"
             + ");";
 
-    static final String CREATE_HOME_DATA_TABLE_SQL = "create table " + HomeTable.HomeDataTable.TABLE_NAME
+    static final String CREATE_HOME_DATA_TABLE_SQL = "create table "
+            + HomeTable.HomeDataTable.TABLE_NAME
             + "("
             + HomeTable.HomeDataTable.ID + " integer primary key autoincrement,"
             + HomeTable.HomeDataTable.ACCOUNTID + " text,"
@@ -51,7 +71,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + HomeTable.HomeDataTable.JSONDATA + " text"
             + ");";
 
-    static final String CREATE_HOME_OTHER_GROUP_TABLE_SQL = "create table " + HomeOtherGroupTable.TABLE_NAME
+    static final String CREATE_HOME_OTHER_GROUP_TABLE_SQL = "create table "
+            + HomeOtherGroupTable.TABLE_NAME
             + "("
             + HomeOtherGroupTable.ID + " integer primary key autoincrement,"
             + HomeOtherGroupTable.ACCOUNTID + " text,"
@@ -59,7 +80,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + HomeOtherGroupTable.TIMELINEDATA + " text"
             + ");";
 
-    static final String CREATE_HOME_OTHER_GROUP_DATA_TABLE_SQL = "create table " + HomeOtherGroupTable.HomeOtherGroupDataTable.TABLE_NAME
+    static final String CREATE_HOME_OTHER_GROUP_DATA_TABLE_SQL = "create table "
+            + HomeOtherGroupTable.HomeOtherGroupDataTable.TABLE_NAME
             + "("
             + HomeOtherGroupTable.HomeOtherGroupDataTable.ID + " integer primary key autoincrement,"
             + HomeOtherGroupTable.HomeOtherGroupDataTable.ACCOUNTID + " text,"
@@ -75,7 +97,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + CommentsTable.TIMELINEDATA + " text"
             + ");";
 
-    static final String CREATE_COMMENTS_DATA_TABLE_SQL = "create table " + CommentsTable.CommentsDataTable.TABLE_NAME
+    static final String CREATE_COMMENTS_DATA_TABLE_SQL = "create table "
+            + CommentsTable.CommentsDataTable.TABLE_NAME
             + "("
             + CommentsTable.CommentsDataTable.ID + " integer primary key autoincrement,"
             + CommentsTable.CommentsDataTable.ACCOUNTID + " text,"
@@ -91,7 +114,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + RepostsTable.TIMELINEDATA + " text"
             + ");";
 
-    static final String CREATE_REPOSTS_DATA_TABLE_SQL = "create table " + RepostsTable.RepostDataTable.TABLE_NAME
+    static final String CREATE_REPOSTS_DATA_TABLE_SQL = "create table "
+            + RepostsTable.RepostDataTable.TABLE_NAME
             + "("
             + RepostsTable.RepostDataTable.ID + " integer primary key autoincrement,"
             + RepostsTable.RepostDataTable.ACCOUNTID + " text,"
@@ -99,14 +123,16 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + RepostsTable.RepostDataTable.JSONDATA + " text"
             + ");";
 
-    static final String CREATE_COMMENT_BY_ME_TABLE_SQL = "create table " + CommentByMeTable.TABLE_NAME
+    static final String CREATE_COMMENT_BY_ME_TABLE_SQL = "create table "
+            + CommentByMeTable.TABLE_NAME
             + "("
             + CommentByMeTable.ID + " integer primary key autoincrement,"
             + CommentByMeTable.ACCOUNTID + " text,"
             + CommentByMeTable.TIMELINEDATA + " text"
             + ");";
 
-    static final String CREATE_COMMENT_BY_ME_DATA_TABLE_SQL = "create table " + CommentByMeTable.CommentByMeDataTable.TABLE_NAME
+    static final String CREATE_COMMENT_BY_ME_DATA_TABLE_SQL = "create table "
+            + CommentByMeTable.CommentByMeDataTable.TABLE_NAME
             + "("
             + CommentByMeTable.CommentByMeDataTable.ID + " integer primary key autoincrement,"
             + CommentByMeTable.CommentByMeDataTable.ACCOUNTID + " text,"
@@ -114,16 +140,19 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + CommentByMeTable.CommentByMeDataTable.JSONDATA + " text"
             + ");";
 
-    static final String CREATE_MENTION_COMMENTS_TABLE_SQL = "create table " + MentionCommentsTable.TABLE_NAME
+    static final String CREATE_MENTION_COMMENTS_TABLE_SQL = "create table "
+            + MentionCommentsTable.TABLE_NAME
             + "("
             + MentionCommentsTable.ID + " integer primary key autoincrement,"
             + MentionCommentsTable.ACCOUNTID + " text,"
             + MentionCommentsTable.TIMELINEDATA + " text"
             + ");";
 
-    static final String CREATE_MENTION_COMMENTS_DATA_TABLE_SQL = "create table " + MentionCommentsTable.MentionCommentsDataTable.TABLE_NAME
+    static final String CREATE_MENTION_COMMENTS_DATA_TABLE_SQL = "create table "
+            + MentionCommentsTable.MentionCommentsDataTable.TABLE_NAME
             + "("
-            + MentionCommentsTable.MentionCommentsDataTable.ID + " integer primary key autoincrement,"
+            + MentionCommentsTable.MentionCommentsDataTable.ID
+            + " integer primary key autoincrement,"
             + MentionCommentsTable.MentionCommentsDataTable.ACCOUNTID + " text,"
             + MentionCommentsTable.MentionCommentsDataTable.MBLOGID + " text,"
             + MentionCommentsTable.MentionCommentsDataTable.JSONDATA + " text"
@@ -145,7 +174,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + FavouriteTable.PAGE + " text"
             + ");";
 
-    static final String CREATE_FAVOURITES_DATA_TABLE_SQL = "create table " + FavouriteTable.FavouriteDataTable.TABLE_NAME
+    static final String CREATE_FAVOURITES_DATA_TABLE_SQL = "create table "
+            + FavouriteTable.FavouriteDataTable.TABLE_NAME
             + "("
             + FavouriteTable.FavouriteDataTable.ID + " integer primary key autoincrement,"
             + FavouriteTable.FavouriteDataTable.ACCOUNTID + " text,"
@@ -160,7 +190,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + MyStatusTable.TIMELINEDATA + " text"
             + ");";
 
-    static final String CREATE_MYSTATUSES_DATA_TABLE_SQL = "create table " + MyStatusTable.StatusDataTable.TABLE_NAME
+    static final String CREATE_MYSTATUSES_DATA_TABLE_SQL = "create table "
+            + MyStatusTable.StatusDataTable.TABLE_NAME
             + "("
             + MyStatusTable.StatusDataTable.ID + " integer primary key autoincrement,"
             + MyStatusTable.StatusDataTable.ACCOUNTID + " text,"
@@ -193,11 +224,13 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + DraftTable.TYPE + " integer"
             + ");";
 
-    static final String CREATE_ATUSERS_TABLE_SQL = "create table " + AtUsersTable.TABLE_NAME
+    public static final String CREATE_ATUSERS_TABLE_SQL = "create table " + AtUsersTable.TABLE_NAME
             + "("
-            + AtUsersTable.ID + " integer primary key autoincrement,"
+            + AtUsersTable.ID + " integer,"
+            + AtUsersTable.USERID + " text,"
             + AtUsersTable.ACCOUNTID + " text,"
-            + AtUsersTable.JSONDATA + " text"
+            + AtUsersTable.JSONDATA + " text,"
+            + "primary key (" + AtUsersTable.USERID + "," + AtUsersTable.ACCOUNTID + ")"
             + ");";
 
     static final String CREATE_TOPICS_TABLE_SQL = "create table " + TopicTable.TABLE_NAME
@@ -271,6 +304,17 @@ class DatabaseHelper extends SQLiteOpenHelper {
             + MyStatusTable.ACCOUNTID
             + ")";
 
+    private static final String CREATE_NOTIFICATION_TABLE_SQL = "create table "
+            + NotificationTable.TABLE_NAME
+            + "("
+            + NotificationTable.ID + " integer ,"
+            + NotificationTable.ACCOUNTID + " text,"
+            + NotificationTable.MSGID + " text,"
+            + NotificationTable.TYPE + " text,"
+            + "primary key (" + NotificationTable.ACCOUNTID + "," + NotificationTable.MSGID + ","
+            + NotificationTable.TYPE + ")"
+            + ");";
+
 
     DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -286,9 +330,14 @@ class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion < 34) {
+
+        if (oldVersion == 35) {
+            Upgrade35to36.upgrade(db);
+        } else if (oldVersion < 34) {
             deleteAllTable(db);
             onCreate(db);
+        } else if (oldVersion == 34) {
+            upgrade34To35(db);
         } else {
             deleteAllTableExceptAccount(db);
             createOtherTable(db);
@@ -347,6 +396,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_COMMENT_BY_ME_INDEX_SQL);
         db.execSQL(CREATE_DM_INDEX_SQL);
         db.execSQL(CREATE_MYSTATUSES_INDEX_SQL);
+
+        db.execSQL(CREATE_NOTIFICATION_TABLE_SQL);
     }
 
     private void deleteAllTableExceptAccount(SQLiteDatabase db) {
@@ -357,7 +408,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + HomeTable.HomeDataTable.TABLE_NAME);
 
         db.execSQL("DROP TABLE IF EXISTS " + HomeOtherGroupTable.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + HomeOtherGroupTable.HomeOtherGroupDataTable.TABLE_NAME);
+        db.execSQL(
+                "DROP TABLE IF EXISTS " + HomeOtherGroupTable.HomeOtherGroupDataTable.TABLE_NAME);
 
         db.execSQL("DROP TABLE IF EXISTS " + CommentsTable.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + CommentsTable.CommentsDataTable.TABLE_NAME);
@@ -366,7 +418,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + RepostsTable.RepostDataTable.TABLE_NAME);
 
         db.execSQL("DROP TABLE IF EXISTS " + MentionCommentsTable.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + MentionCommentsTable.MentionCommentsDataTable.TABLE_NAME);
+        db.execSQL(
+                "DROP TABLE IF EXISTS " + MentionCommentsTable.MentionCommentsDataTable.TABLE_NAME);
 
         db.execSQL("DROP TABLE IF EXISTS " + CommentByMeTable.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + CommentByMeTable.CommentByMeDataTable.TABLE_NAME);
@@ -383,6 +436,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + DMTable.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + AtUsersTable.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + TopicTable.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + NotificationTable.TABLE_NAME);
 
     }
 
@@ -391,5 +445,10 @@ class DatabaseHelper extends SQLiteOpenHelper {
 
         deleteAllTableExceptAccount(db);
 
+    }
+
+
+    private void upgrade34To35(SQLiteDatabase db) {
+        db.execSQL(CREATE_NOTIFICATION_TABLE_SQL);
     }
 }

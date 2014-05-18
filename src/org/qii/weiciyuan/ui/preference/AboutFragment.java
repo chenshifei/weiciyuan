@@ -9,6 +9,7 @@ import org.qii.weiciyuan.support.utils.GlobalContext;
 import org.qii.weiciyuan.ui.send.WriteWeiboActivity;
 
 import android.app.ActivityManager;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +28,8 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.view.Window;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -67,18 +70,18 @@ public class AboutFragment extends PreferenceFragment {
                     }
                 });
 
-        findPreference(SettingActivity.RECOMMEND)
-                .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                    @Override
-                    public boolean onPreferenceClick(Preference preference) {
-                        Intent intent = new Intent(getActivity(), WriteWeiboActivity.class);
-                        intent.putExtra("token", GlobalContext.getInstance().getSpecialToken());
-                        intent.putExtra("account", GlobalContext.getInstance().getAccountBean());
-                        intent.putExtra("content", getString(R.string.recommend_content));
-                        startActivity(intent);
-                        return true;
-                    }
-                });
+//        findPreference(SettingActivity.RECOMMEND)
+//                .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//                    @Override
+//                    public boolean onPreferenceClick(Preference preference) {
+//                        Intent intent = new Intent(getActivity(), WriteWeiboActivity.class);
+//                        intent.putExtra("token", GlobalContext.getInstance().getSpecialToken());
+//                        intent.putExtra("account", GlobalContext.getInstance().getAccountBean());
+//                        intent.putExtra("content", getString(R.string.recommend_content));
+//                        startActivity(intent);
+//                        return true;
+//                    }
+//                });
 
         findPreference(SettingActivity.VERSION).setSummary(buildVersionInfo());
 
@@ -88,6 +91,20 @@ public class AboutFragment extends PreferenceFragment {
                     public boolean onPreferenceClick(Preference preference) {
                         ChangeLogDialog changeLogDialog = new ChangeLogDialog(getActivity());
                         changeLogDialog.show();
+                        return true;
+                    }
+                });
+
+        findPreference(SettingActivity.DONATE)
+                .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        Dialog dialog = new Dialog(getActivity(), R.style.UserAvatarDialog);
+                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                        ImageView imageView = new ImageView(getActivity());
+                        imageView.setImageResource(R.drawable.alipay);
+                        dialog.setContentView(imageView);
+                        dialog.show();
                         return true;
                     }
                 });

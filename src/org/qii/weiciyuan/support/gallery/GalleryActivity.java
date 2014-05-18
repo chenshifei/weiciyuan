@@ -57,6 +57,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  * User: qii
  * Date: 13-7-28
  */
+@Deprecated
 public class GalleryActivity extends Activity {
 
     private static final int IMAGEVIEW_SOFT_LAYER_MAX_WIDTH = 2000;
@@ -100,7 +101,7 @@ public class GalleryActivity extends Activity {
         position = (TextView) findViewById(R.id.position);
         TextView sum = (TextView) findViewById(R.id.sum);
 
-        rect = getIntent().getParcelableExtra("rect");
+//        rect = ((AnimationRect) getIntent().getParcelableArrayListExtra("rect")).scaledBitmapRect;
 
         MessageBean msg = getIntent().getParcelableExtra("msg");
         ArrayList<String> tmp = msg.getThumbnailPicUrls();
@@ -108,6 +109,20 @@ public class GalleryActivity extends Activity {
             urls.add(tmp.get(i).replace("thumbnail", "large"));
         }
         sum.setText(String.valueOf(urls.size()));
+
+        //jump to new gallery animation activity
+        if (urls.size() < 10 && ImageUtility.isThisBitmapCanRead(
+                FileManager.getFilePathFromUrl(urls.get(0), FileLocationMethod.picture_large))
+                ) {
+            Intent intent = new Intent(this, GalleryAnimationActivity.class);
+            intent.putExtra("msg", getIntent().getParcelableExtra("msg"));
+            intent.putExtra("rect", getIntent().getParcelableArrayListExtra("rect"));
+            intent.putExtra("position", getIntent().getIntExtra("position", 0));
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+            finish();
+            return;
+        }
 
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(new ImagePagerAdapter());
@@ -154,12 +169,14 @@ public class GalleryActivity extends Activity {
                 task.cancel(true);
             }
         }
-        Utility.recycleViewGroupAndChildViews(pager, true);
-        for (ViewGroup viewGroup : unRecycledViews) {
-            Utility.recycleViewGroupAndChildViews(viewGroup, true);
-        }
+        if (pager != null && unRecycledViews != null) {
+            Utility.recycleViewGroupAndChildViews(pager, true);
+            for (ViewGroup viewGroup : unRecycledViews) {
+                Utility.recycleViewGroupAndChildViews(viewGroup, true);
+            }
 
-        System.gc();
+            System.gc();
+        }
     }
 
 
@@ -509,9 +526,9 @@ public class GalleryActivity extends Activity {
 
         boolean isThisBitmapTooLarge = ImageUtility.isThisBitmapTooLargeToRead(bitmapPath);
         if (isThisBitmapTooLarge && !alreadyShowPicturesTooLargeHint) {
-            Toast.makeText(GalleryActivity.this,
-                    R.string.picture_is_too_large_so_enable_software_layer, Toast.LENGTH_LONG)
-                    .show();
+//            Toast.makeText(GalleryActivity.this,
+//                    R.string.picture_is_too_large_so_enable_software_layer, Toast.LENGTH_LONG)
+//                    .show();
             alreadyShowPicturesTooLargeHint = true;
         }
 

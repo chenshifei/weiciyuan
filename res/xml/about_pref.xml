@@ -49,9 +49,7 @@
                 android:title="@string/pref_donate_title"
                 android:summary="@string/pref_donate_summary"
                 >
-            <intent
-                    android:action="android.intent.action.VIEW"
-                    android:data="http://me.alipay.com/qiibeta"/>
+
         </Preference>
         <Preference
                 android:title="@string/pref_play_store_address_title"
@@ -70,27 +68,13 @@
 
         </Preference>
 
-        <Preference
-                android:key="pref_recommend_key"
-                android:title="@string/pref_recommend_title"
-                >
+        <!--<Preference-->
+        <!--android:enabled="false"-->
+        <!--android:key="pref_recommend_key"-->
+        <!--android:title="@string/pref_recommend_title"-->
+        <!-->-->
 
-        </Preference>
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-            android:title="@string/pref_thanks_title"
-            >
-        <Preference
-                android:title="@string/pref_icon_design_title"
-                android:summary="LPF, 0.483 version"
-                />
-        <Preference
-                android:title="@string/pref_icon_design_title"
-                android:summary="NovaDNG, 0.482 version"
-                >
-        </Preference>
+        <!--</Preference>-->
 
     </PreferenceCategory>
 

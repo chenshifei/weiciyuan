@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.qii.weiciyuan"
-          android:versionCode="37"
-          android:versionName="0.5.0beta4">
+          android:versionCode="39"
+          android:versionName="0.5.0beta5">
 
-<uses-sdk
+    <uses-sdk
             android:minSdkVersion="17"
             android:targetSdkVersion="19"/>
     <uses-feature
@@ -108,6 +108,11 @@
         <activity
                 android:name=".support.gallery.GalleryActivity"
                 android:theme="@style/GalleryTheme"
+                android:launchMode="singleTop"/>
+        <activity
+                android:name=".support.gallery.GalleryAnimationActivity"
+                android:theme="@style/GalleryTheme"
+                android:configChanges="screenSize|keyboardHidden|orientation"
                 android:launchMode="singleTop"/>
         <activity
                 android:name=".ui.browser.BrowserWriteWeiboLocalPicActivity"
@@ -255,7 +260,8 @@
                 android:name=".othercomponent.unreadnotification.JBMentionsCommentNotificationServiceHelper"/>
         <service
                 android:name=".othercomponent.unreadnotification.JBCommentsToMeNotificationServiceHelper"/>
-
+        <service android:name=".othercomponent.unreadnotification.BigTextNotificationService"/>
+        <service android:name=".othercomponent.unreadnotification.SimpleTextNotificationService"/>
 
         <!---broadcast receiver -->
         <receiver
